@@ -35,29 +35,30 @@ class Code:
     def get_bytes_from_text(self, text: str) -> bytes:
         return text.encode()
 
-    def create_connection(self, db_path: str):
+    def create_connection(
+        self, host="127.0.0.1", user="qwerty", password="qwerty", database="datadb"
+    ):
         conn = None
         try:
-            print("dupa")
             conn = pymysql.connect(
-                host="127.0.0.1",
-                user="qwerty",
-                password="qwerty",
-                database="datadb"
+                host=host, user=user, password=password, database=database
             )
-            print("dupa")
-            create_table = "CREATE TABLE data_table ( Id int NOT NULL AUTO_INCREMENT, Data LONGBLOB NOT NULL, PRIMARY KEY (Id));"
             cur = conn.cursor()
+            drop_table = "DROP TABLE data_table;"
+            create_table = "CREATE TABLE data_table ( Id int NOT NULL AUTO_INCREMENT, Data LONGBLOB NOT NULL, PRIMARY KEY (Id));"
+            cur.execute(drop_table)
+            conn.commit()
             cur.execute(create_table)
+            conn.commit()
             cur.close()
         except Exception as e:
             print(f"nie udało się połaczyć z bazą danych {e}")
         return conn
 
     def insert_into_db(self, conn, data: bytes):
-        sql = f"INSERT INTO `data_table` (`Data`) VALUES ({bytes(data)});"
-        print(sql)
+        sql = f"INSERT INTO `data_table` (`Data`) VALUES (%s);"
         cur = conn.cursor()
-        cur.execute(sql)
+        cur.execute(sql, (data,))
+        conn.commit()
         return cur.lastrowid
 
