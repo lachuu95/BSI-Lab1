@@ -1,5 +1,5 @@
 from Crypto.Cipher import AES
-import sqlite3
+import pymysql
 
 
 class Code:
@@ -35,17 +35,28 @@ class Code:
     def get_bytes_from_text(self, text: str) -> bytes:
         return text.encode()
 
-    def create_connection(self, db_path:str):
+    def create_connection(self, db_path: str):
         conn = None
         try:
-            conn = sqlite3.connect(db_path)
-        except:
-            print("nie udało się połaczyć z bazą danych")
+            print("dupa")
+            conn = pymysql.connect(
+                host="127.0.0.1",
+                user="qwerty",
+                password="qwerty",
+                database="datadb"
+            )
+            print("dupa")
+            create_table = "CREATE TABLE data_table ( Id int NOT NULL AUTO_INCREMENT, Data LONGBLOB NOT NULL, PRIMARY KEY (Id));"
+            cur = conn.cursor()
+            cur.execute(create_table)
+            cur.close()
+        except Exception as e:
+            print(f"nie udało się połaczyć z bazą danych {e}")
         return conn
 
-    def insert_into_db(self, conn, data:bytes):
-        #TODO: zmienić nazwę tabeli
-        sql = f"INSERT INTO table_name VALUES ({data});"
+    def insert_into_db(self, conn, data: bytes):
+        sql = f"INSERT INTO `data_table` (`Data`) VALUES ({bytes(data)});"
+        print(sql)
         cur = conn.cursor()
         cur.execute(sql)
         return cur.lastrowid
