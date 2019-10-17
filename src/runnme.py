@@ -41,6 +41,7 @@ def code_to_db(code):
     print(code.insert_into_db(conn, text_code))
     file_code, _ = code_file(code)
     print(code.insert_into_db(conn, file_code))
+    conn.close()
 
 
 def main():

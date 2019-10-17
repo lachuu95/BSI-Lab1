@@ -36,14 +36,11 @@ class Code:
     def get_bytes_from_text(self, text: str) -> bytes:
         return text.encode()
 
-    def create_connection(
-        self, host="127.0.0.1", user="qwerty", password="qwerty", database="datadb"
-    ):
+    def create_connection(self):
         conn = None
-        print(host, user, password, database)
         try:
             conn = pymysql.connect(
-                host=host, user=user, password=password, database=database
+                host="127.0.0.1", user="qwerty", password="qwerty", database="datadb"
             )
             cur = conn.cursor()
             drop_table = "DROP TABLE data_table;"
@@ -62,5 +59,7 @@ class Code:
         cur = conn.cursor()
         cur.execute(sql, (data,))
         conn.commit()
-        return cur.lastrowid
+        id_in_db=cur.lastrowid
+        cur.close()
+        return id_in_db
 
