@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-from src.cryptography import Code
+#!./.env/bin/python
+from cryptography import Code
 import os
 
 
@@ -10,7 +10,7 @@ def code_text(code):
     return code.code(text_bytes)
 
 
-def decode_text(text_code, code):
+def decode_text(text_code:bytes, code):
     print(f"Zakodowany tekst: {text_code}")
     text_decode = code.decode(text_code)
     print(f"zdekodowany tekst: {code.get_text_from_bytes(text_decode)}")
@@ -36,8 +36,11 @@ def decode_file(file_data, code):
 
 
 def code_to_db(code):
-    code.create_connection()
-    # TODO odczyt tekstu, pliku i zapis do db
+    conn = code.create_connection()
+    text_code = code_text(code)
+    print(code.insert_into_db(conn, text_code))
+    file_code, _ = code_file(code)
+    print(code.insert_into_db(conn, file_code))
 
 
 def main():

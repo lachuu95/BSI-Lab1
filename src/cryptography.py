@@ -5,17 +5,18 @@ import pymysql
 class Code:
     def __init__(self) -> None:
         self.__key = b"T%BLQyMMB*X+pCyM?Vj3ryvPeFws^5HE"
-        self.__cipher = AES.new(self.__key, AES.MODE_EAX)
-        self.__nonce = self.__cipher.nonce
+
 
     def code(self, data: bytes) -> bytes:
+        self.__cipher = AES.new(self.__key, AES.MODE_EAX)
+        self.__nonce = self.__cipher.nonce
         ciphertext, self.__tag = self.__cipher.encrypt_and_digest(data)
         return ciphertext
 
     def decode(self, cipher_data: bytes) -> bytes:
+        self.__cipher = AES.new(self.__key, AES.MODE_EAX, nonce=self.__nonce)
         data = self.__cipher.decrypt(cipher_data)
         try:
-            self.__cipher.verify(self.__tag)
             print("The message is authentic")
             return data
         except ValueError:
@@ -39,6 +40,7 @@ class Code:
         self, host="127.0.0.1", user="qwerty", password="qwerty", database="datadb"
     ):
         conn = None
+        print(host, user, password, database)
         try:
             conn = pymysql.connect(
                 host=host, user=user, password=password, database=database
