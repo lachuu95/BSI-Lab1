@@ -6,7 +6,6 @@ class Code:
     def __init__(self) -> None:
         self.__key = b"T%BLQyMMB*X+pCyM?Vj3ryvPeFws^5HE"
 
-
     def code(self, data: bytes) -> bytes:
         self.__cipher = AES.new(self.__key, AES.MODE_EAX)
         self.__nonce = self.__cipher.nonce
@@ -40,13 +39,13 @@ class Code:
         conn = None
         try:
             conn = pymysql.connect(
-                host="127.0.0.1", user="qwerty", password="qwerty", database="datadb"
+                host="127.0.0.1", user="qwerty", password="qwerty", database="datadb", use_unicode=True, charset="utf8"
             )
             cur = conn.cursor()
-            drop_table = "DROP TABLE data_table;"
-            create_table = "CREATE TABLE data_table ( Id int NOT NULL AUTO_INCREMENT, Data LONGBLOB NOT NULL, PRIMARY KEY (Id));"
+            drop_table = "DROP TABLE IF EXISTS `data_table`;"
             cur.execute(drop_table)
             conn.commit()
+            create_table = "CREATE TABLE `data_table` ( Id int NOT NULL AUTO_INCREMENT, Data LONGBLOB NOT NULL, PRIMARY KEY (Id));"
             cur.execute(create_table)
             conn.commit()
             cur.close()
@@ -59,7 +58,15 @@ class Code:
         cur = conn.cursor()
         cur.execute(sql, (data,))
         conn.commit()
-        id_in_db=cur.lastrowid
+        id_in_db = cur.lastrowid
         cur.close()
         return id_in_db
+
+    def select_from_db(self, conn, id: int) -> bytes:
+        sql = f"SELECT `Data` FROM `data_table` WHERE Id = %s;"
+        cur = conn.cursor()
+        cur.execute(sql, id)
+        records = cur.fetchall()
+        cur.close()
+        return records[0][0]
 
