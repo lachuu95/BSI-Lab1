@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import argparse
-from code_helper import CodeHelper
+sys.path.append(os.path.dirname(os.path.dirname(sys.path[0])))
+from src.common.code_helper import CodeHelper
 
 
 def main(text: str, path_file_input: str) -> None:
