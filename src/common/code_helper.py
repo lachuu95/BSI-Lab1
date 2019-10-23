@@ -1,11 +1,11 @@
-from src.common.cryptography import Code
 from src.common.db_helper import DBHelper
+from src.common.cryptography import Code
 
 
 class CodeHelper:
     def __init__(self):
-        self.__code = Code()
         self.__db_helper = DBHelper()
+        self.__code = Code()
 
     def code_text_to_file(self, text: str, file_path_out: str) -> None:
         print(f"wejściowy tekst: {text}")
