@@ -1,7 +1,0 @@
-mysql -u qwerty -p -h 127.0.0.1 -P 3306
-use datadb;
-show tables;
-describe data_table;
-SELECT * FROM data_table;
-DROP TABLE data_table;
-SELECT Id, LEFT(Data , 3) FROM data_table;
