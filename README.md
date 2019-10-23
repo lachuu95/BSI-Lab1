@@ -6,7 +6,7 @@ Bezpieczństwo Systemów Informatycznych
 $ python3 -m venv .env
 ```
 ```bash
-$ . .env/bin/scripts
+$ . .env/bin/activate
 ```
 ```bash
 $ pip install -U -r requirements.txt
