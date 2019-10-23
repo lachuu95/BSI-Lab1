@@ -3,11 +3,11 @@ from Crypto.Random import get_random_bytes
 
 
 class Code:
-    def __init__(self, key:bytes=b"T%BLQyMMB*X+pCyM?Vj3ryvPeFws^5HE") -> None:
+    def __init__(self, key: bytes = b"T%BLQyMMB*X+pCyM?Vj3ryvPeFws^5HE") -> None:
         self.__key = self.__validate_key(key)
-        self.__nonce = get_random_bytes(8)
+        self.__nonce = b""
 
-    def __validate_key(self, key):
+    def __validate_key(self, key: bytes) -> bytes:
         key_len = [16, 24, 32]
         if len(key) not in key_len:
             print(f"Klucz powinien mieć długość {key_len}")

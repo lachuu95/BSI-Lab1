@@ -10,7 +10,7 @@ class DBHelper:
         database="datadb",
         use_unicode=False,
         charset="utf8",
-    ):
+    ) -> None:
         self.__conn = None
         try:
             self.__conn = mysql.connector.connect(
@@ -26,7 +26,7 @@ class DBHelper:
         self.drop_table()
         self.create_table()
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.__conn.close()
 
     def drop_table(self) -> None:
