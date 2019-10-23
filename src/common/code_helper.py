@@ -11,13 +11,13 @@ class CodeHelper:
         print(f"wejściowy tekst: {text}")
         text_bytes = text.encode()
         text_code = self.__code.code(text_bytes)
-        print(text_code)
         with open(file_path_out, "wb") as file_object:
             file_object.write(text_code)
 
     def decode_file_to_text(self, file_path_out: str) -> str:
         with open(file_path_out, "rb") as file_object:
             text_code = file_object.read()
+        print(f"zawarość wczytanego pliku: {text_code}")
         text_bytes = self.__code.decode(text_code)
         text_decode = text_bytes.decode()
         return text_decode
