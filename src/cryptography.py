@@ -1,72 +1,30 @@
 from Crypto.Cipher import AES
-import pymysql
+from Crypto.Random import get_random_bytes
 
 
 class Code:
-    def __init__(self) -> None:
-        self.__key = b"T%BLQyMMB*X+pCyM?Vj3ryvPeFws^5HE"
+    def __init__(self, key:bytes=b"T%BLQyMMB*X+pCyM?Vj3ryvPeFws^5HE") -> None:
+        self.__key = self.__validate_key(key)
+        self.__nonce = get_random_bytes(8)
+
+    def __validate_key(self, key):
+        key_len = [16, 24, 32]
+        if len(key) not in key_len:
+            print(f"Klucz powinien mieć długość {key_len}")
+            print(f"Obecna długość klucza: {len(key)}")
+            key = get_random_bytes(32)
+            print(f"klucz użyty do zaszyfrowania danych: {key}")
+        return key
 
     def code(self, data: bytes) -> bytes:
-        self.__cipher = AES.new(self.__key, AES.MODE_EAX)
-        self.__nonce = self.__cipher.nonce
-        ciphertext, self.__tag = self.__cipher.encrypt_and_digest(data)
-        return ciphertext
+        cipher = AES.new(self.__key, AES.MODE_CTR, nonce=self.__nonce)
+        cipher_data = cipher.decrypt(data)
+        return cipher_data
 
     def decode(self, cipher_data: bytes) -> bytes:
-        self.__cipher = AES.new(self.__key, AES.MODE_EAX, nonce=self.__nonce)
-        data = self.__cipher.decrypt(cipher_data)
         try:
-            print("The message is authentic")
+            cipher = AES.new(self.__key, AES.MODE_CTR, nonce=self.__nonce)
+            data = cipher.decrypt(cipher_data)
             return data
-        except ValueError:
-            print("Key incorrect or message corrupted")
-
-    def get_file_from_bytes(self, filename: str, data: bytes) -> None:
-        f = open(filename, "wb")
-        f.write(data)
-        f.close
-
-    def get_text_from_bytes(self, cipher_text: bytes) -> str:
-        return cipher_text.decode()
-
-    def get_bytes_from_file(self, filename: str) -> bytes:
-        return open(filename, "rb").read()
-
-    def get_bytes_from_text(self, text: str) -> bytes:
-        return text.encode()
-
-    def create_connection(self):
-        conn = None
-        try:
-            conn = pymysql.connect(
-                host="127.0.0.1", user="qwerty", password="qwerty", database="datadb", use_unicode=True, charset="utf8"
-            )
-            cur = conn.cursor()
-            drop_table = "DROP TABLE IF EXISTS `data_table`;"
-            cur.execute(drop_table)
-            conn.commit()
-            create_table = "CREATE TABLE `data_table` ( Id int NOT NULL AUTO_INCREMENT, Data LONGBLOB NOT NULL, PRIMARY KEY (Id));"
-            cur.execute(create_table)
-            conn.commit()
-            cur.close()
-        except Exception as e:
-            print(f"nie udało się połaczyć z bazą danych {e}")
-        return conn
-
-    def insert_into_db(self, conn, data: bytes):
-        sql = f"INSERT INTO `data_table` (`Data`) VALUES (%s);"
-        cur = conn.cursor()
-        cur.execute(sql, (data,))
-        conn.commit()
-        id_in_db = cur.lastrowid
-        cur.close()
-        return id_in_db
-
-    def select_from_db(self, conn, id: int) -> bytes:
-        sql = f"SELECT `Data` FROM `data_table` WHERE Id = %s;"
-        cur = conn.cursor()
-        cur.execute(sql, id)
-        records = cur.fetchall()
-        cur.close()
-        return records[0][0]
-
+        except ValueError as e:
+            print(f"Klucz nie poprawny lub zepsuta wiadomość: {e}")

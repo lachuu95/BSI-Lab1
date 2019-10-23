@@ -1,78 +1,66 @@
-#!./.env/bin/python
-from cryptography import Code
+#!/usr/bin/env python3
+
 import os
+import argparse
+from cryptography import Code
+from db_helper import DBHelper
 
 
-def code_text(code):
-    # text = input("Wpisz tekst do zakodowania: ")
-    text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
-    text_bytes = code.get_bytes_from_text(text)
-    print(f"wejściowy tekst: {text}")
-    return code.code(text_bytes)
-
-
-def decode_text(text_code: bytes, code):
-    print(f"Zakodowany tekst: {text_code}")
-    text_decode = code.decode(text_code)
-    print(f"zdekodowany tekst: {code.get_text_from_bytes(text_decode)}")
-
-
-def code_file(code):
-    # file_path = input("Wpisz ścieżke do pliku do zakodowania: ")
-    file_path = "resource/image.jpg"
-    file_ext = os.path.splitext(file_path)[1]
-    file_bytes = code.get_bytes_from_file(file_path)
-    print(f"wejściowy plik: {file_path}")
-    return (code.code(file_bytes), file_ext)
-
-
-def decode_file(file_data, code):
-    file_code, file_ext = file_data
-    print(f"zakodowany plik: {file_code[:10]}...")
-    file_decode = code.decode(file_code)
-    code.get_file_from_bytes(f"odkodowanyPlik{file_ext}", file_decode)
-    print(f"zdekodowany plik: odkodowanyPlik{file_ext}")
-
-
-def code_text_to_db(code, conn):
-    text_code = code_text(code)
-    return code.insert_into_db(conn, text_code)
-
-
-def decode_text_from_db(id, code, conn):
-    text_code = code.select_from_db(conn, id)
-    decode_text(text_code, code)
-
-
-def code_file_to_db(code, conn):
-    file_code, file_ext  = code_file(code)
-    return (code.insert_into_db(conn, file_code), file_ext)
-
-
-def decode_file_from_db(file_data, code, conn):
-    file_id, file_ext = file_data
-    file_code = (code.select_from_db(conn, file_id), file_ext)
-    decode_file(file_code, code)
-
-
-def main():
+def main(text, path_to_file):
 
     code = Code()
 
-    temp = code_text(code)
-    decode_text(temp, code)
+    file_path_out = "resource/text_code_file"
+    print(f"wejściowy tekst: {text}")
+    text_bytes = text.encode()
+    text_code = code.code(text_bytes)
+    print(text_code)
+    with open(file_path_out, "wb") as file_object:
+        file_object.write(text_code)
 
-    temp = code_file(code)
-    decode_file(temp, code)
+    with open(file_path_out, "rb") as file_object:
+        text_code = file_object.read()
+    text_bytes = code.decode(text_code)
+    text_decode = text_bytes.decode()
+    print(f"wyjściowy tekst: {text_decode}")
 
-    conn = code.create_connection()
-    temp = code_text_to_db(code, conn)
-    decode_text_from_db(temp, code, conn)
+    file_path_out_code = "resource/file_code_file"
+    file_ext = os.path.splitext(path_to_file)[1]
+    file_path_out_decode = f"resource/file_decode_file{file_ext}"
+    with open(path_to_file, "rb") as file_object:
+        file_bytes = file_object.read()
+    file_code = code.code(file_bytes)
+    with open(file_path_out_code, "wb") as file_object:
+        file_object.write(file_code)
 
-    temp = code_file_to_db(code, conn)
-    decode_file_from_db(temp, code, conn)
-    conn.close()
+    with open(file_path_out_code, "rb") as file_object:
+        file_code = file_object.read()
+    file_decode = code.decode(file_code)
+    with open(file_path_out_decode, "wb") as file_object:
+        file_object.write(file_decode)
+
+    db_helper = DBHelper()
+    file_ext = os.path.splitext(path_to_file)[1]
+    file_path_out_decode = f"resource/db_decode_file{file_ext}"
+    with open(path_to_file, "rb") as file_object:
+        file_bytes = file_object.read()
+    file_code = code.code(file_bytes)
+    file_id = db_helper.insert_into_db(file_code)
+
+    file_code = db_helper.select_from_db(file_id)
+    file_decode = code.decode(file_code)
+    with open(file_path_out_decode, "wb") as file_object:
+        file_object.write(file_decode)
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="Code and decode text, file, file with db."
+    )
+    parser.add_argument("text", type=str, help="Text to code and decode.")
+    parser.add_argument("path_to_file", type=str, help="Path file to code and decode")
+    args = parser.parse_args()
+    if os.path.isfile(args.path_to_file):
+        main(args.text, args.path_to_file)
+    else:
+        print(f"File {args.path_to_file} doesn't exist.")
