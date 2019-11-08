@@ -43,4 +43,4 @@ if __name__ == "__main__":
     if os.path.isfile(args.path_to_file):
         main(args.text, args.path_to_file)
     else:
-        print(f"Plik o ścierzce: {args.path_to_file} nie istnieje.")
+        print(f"Plik o ścieżce: {args.path_to_file} nie istnieje.")
