@@ -10,3 +10,11 @@ def test_DBHelper(tmpdir):
     db_path = tmpdir.join("hello.db")
     DBHelper(db_path)
     assert True
+    # sprawdz czy plik istnieje
+    # sprawdz czy tabela w pliku istnieje
+
+# mockowanie dla wszystkich xd
+
+# sprawdz czy wstawia do tabeli
+
+# sprawdz czy odczytuje z tablei
