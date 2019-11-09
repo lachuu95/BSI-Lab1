@@ -1,10 +1,9 @@
-#import mysql.connector
 import sqlite3
-import os
+from os.path import join as os_path_join
 
 
 class DBHelper:
-    def __init__(self, path_to_db: str = os.path.join("resource", "BaZaDaNyCh.db")) -> None:
+    def __init__(self, path_to_db: str = os_path_join("resource", "BaZaDaNyCh.db")) -> None:
         self.__conn = sqlite3.connect(path_to_db)
         self.__drop_table()
         self.__create_table()
