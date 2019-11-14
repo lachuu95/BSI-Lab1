@@ -1,50 +1,32 @@
-import mysql.connector
+import sqlite3
+from os.path import join as os_path_join
 
 
 class DBHelper:
-    def __init__(
-        self,
-        host="127.0.0.1",
-        user="qwerty",
-        password="qwerty",
-        database="datadb",
-        use_unicode=False,
-        charset="utf8",
-    ) -> None:
-        self.__conn = None
-        try:
-            self.__conn = mysql.connector.connect(
-                host=host,
-                user=user,
-                password=password,
-                database=database,
-                use_unicode=use_unicode,
-                charset=charset,
-            )
-        except Exception as e:
-            print(f"Nie udało się połaczyć z bazą danych: {e}")
-        self.drop_table()
-        self.create_table()
+    def __init__(self, path_to_db: str = os_path_join("resource", "BaZaDaNyCh.db")) -> None:
+        self.__conn = sqlite3.connect(path_to_db)
+        self.__drop_table()
+        self.__create_table()
 
     def __del__(self) -> None:
         self.__conn.close()
 
-    def drop_table(self) -> None:
+    def __drop_table(self) -> None:
         cur = self.__conn.cursor()
         drop_table = "DROP TABLE IF EXISTS `data_table`;"
         cur.execute(drop_table)
         self.__conn.commit()
         cur.close()
 
-    def create_table(self) -> None:
+    def __create_table(self) -> None:
         cur = self.__conn.cursor()
-        create_table = "CREATE TABLE `data_table` ( Id int NOT NULL AUTO_INCREMENT, Data LONGBLOB NOT NULL, PRIMARY KEY (Id));"
+        create_table = "CREATE TABLE IF NOT EXISTS `data_table` (Id integer PRIMARY KEY, Data LONGBLOB NOT NULL);"
         cur.execute(create_table)
         self.__conn.commit()
         cur.close()
 
     def insert_into_db(self, data: bytes) -> int:
-        sql = f"INSERT INTO `data_table` (`Data`) VALUES (%s);"
+        sql = f"INSERT INTO `data_table` (`Data`) VALUES (?);"
         cur = self.__conn.cursor()
         cur.execute(sql, (data,))
         self.__conn.commit()
@@ -53,7 +35,7 @@ class DBHelper:
         return id_in_db
 
     def select_from_db(self, id: int) -> bytes:
-        sql = f"SELECT `Data` FROM `data_table` WHERE Id = %s;"
+        sql = f"SELECT `Data` FROM `data_table` WHERE Id = ?;"
         cur = self.__conn.cursor()
         cur.execute(sql, (id,))
         records = cur.fetchall()
